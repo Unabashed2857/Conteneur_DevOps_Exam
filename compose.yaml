@@ -1,5 +1,8 @@
 services:
   db:
+    build:
+      context: .
+      dockerfile: db/Dockerfile
     image: mariadb:10.10.7
     restart: always
     secrets:
@@ -11,24 +14,19 @@ services:
       - backend
     environment:
       MYSQL_DATABASE: mydatabase
-      MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-secret /#P@ssw0rd
+      MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-secret
     ports:
       - "3306:3306"
 
-    build:
-      context: .
-      dockerfile: db/Dockerfile
-
-
 web:
     build:
-      context: backend
-      target: builder
+      context: .
+      target: web/Dockerfile
     restart: always
     secrets:
       - db-secret
     ports:
-      - "5000:8000"
+      - "5000:5000"
     networks:
       - backend
     depends_on:
