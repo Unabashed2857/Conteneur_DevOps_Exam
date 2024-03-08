@@ -1,0 +1,46 @@
+services:
+  db:
+    image: mariadb:10.10.7
+    restart: always
+    secrets:
+      - db-secret
+    volumes:
+      # Volume de la base de données
+      - ./db-data:/var/lib/mysql
+    networks:
+      - backend
+    environment:
+      MYSQL_DATABASE: mydatabase
+      MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-secret /#P@ssw0rd
+    ports:
+      - "3306:3306"
+
+    build:
+      context: .
+      dockerfile: db/Dockerfile
+
+
+web:
+    build:
+      context: backend
+      target: builder
+    restart: always
+    secrets:
+      - db-secret
+    ports:
+      - "5000:8000"
+    networks:
+      - backend
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:
+
+secrets:
+  db-secret:
+    file: db/secret.txt
+   
+    networks:
+      backend:
